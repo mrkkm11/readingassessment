@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Recognition for Kids</title>
+    <style>
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .box {
+            border: 2px solid #000;
+            padding: 20px;
+            margin: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .input-box {
+            margin-bottom: 20px;
+        }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .highlight {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Let's Practice Speech!</h1>
+
+        <div class="box">
+            <p>Try to say the sentence:</p>
+            <p id="originalSentence" style="font-size: 24px; color: #333;">Hello, how are you?</p>
+        </div>
+
+        <div class="input-box">
+            <button id="startRecording" class="button">Start Recording</button>
+            <button id="stopRecording" class="button" disabled>Stop Recording</button>
+        </div>
+
+        <div class="box">
+            <p>Your Speech:</p>
+            <div id="result" style="font-size: 20px; color: #333;">Waiting for you to speak...</div>
+        </div>
+
+        <div class="box">
+            <p>Error Count:</p>
+            <div id="errorCount" style="font-size: 20px; color: #333;">0</div>
+        </div>
+    </div>
+
+    <script>
+        const originalSentenceElement = document.getElementById('originalSentence');
+        const startRecordingBtn = document.getElementById('startRecording');
+        const stopRecordingBtn = document.getElementById('stopRecording');
+        const resultDiv = document.getElementById('result');
+        const errorCountDiv = document.getElementById('errorCount');
+
+        let recognition;
+        let errorCount = 0;
+
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        } else {
+            alert('Speech recognition is not supported in this browser. Please try a different browser.');
+        }
+
+        recognition.onstart = () => {
+            resultDiv.innerHTML = 'Go ahead, say the sentence!';
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript.toLowerCase();
+            const originalSentence = originalSentenceElement.textContent.toLowerCase();
+
+            const transcriptWords = transcript.split(' ');
+            const originalWords = originalSentence.split(' ');
+
+            let resultHtml = '';
+            let localErrorCount = 0;
+
+            for (let i = 0; i < originalWords.length; i++) {
+                if (i < transcriptWords.length && transcriptWords[i] === originalWords[i]) {
+                    resultHtml += originalWords[i] + ' ';
+                } else {
+                    resultHtml += '<span class="highlight">' + originalWords[i] + '</span> ';
+                    localErrorCount++;
+                }
+            }
+
+            errorCount += localErrorCount;
+            errorCountDiv.textContent = errorCount;
+
+            resultDiv.innerHTML = resultHtml.trim();
+        };
+
+        startRecordingBtn.addEventListener('click', () => {
+            recognition.start();
+            startRecordingBtn.disabled = true;
+            stopRecordingBtn.disabled = false;
+        });
+
+        stopRecordingBtn.addEventListener('click', () => {
+            recognition.stop();
+            startRecordingBtn.disabled = false;
+            stopRecordingBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>
